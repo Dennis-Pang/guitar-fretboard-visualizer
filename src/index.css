@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @theme {
+  /* No hardcoded colors here, relying on base layer */
+}
+
+:root {
+  /* Light Mode (Default) */
   --color-root-note: #dc2626;
   --color-scale-note: #2563eb;
   --color-fretboard: #f4e6d4;
@@ -11,6 +16,36 @@
   --color-text-muted: #64748b;
   --color-accent: #2563eb;
   --color-accent-hover: #1d4ed8;
+
+  /* Toggle Component - Dropdown Match Style */
+  --color-toggle-track: var(--color-secondary-bg);
+  --color-toggle-btn-active: var(--color-accent);
+  --color-toggle-text-active: #ffffff;
+  /* Always white on accent */
+  --color-toggle-text-inactive: var(--color-text-muted);
+  --color-toggle-text-hover: var(--color-text-main);
+}
+
+.dark {
+  /* Dark Mode Overrides */
+  --color-root-note: #ef4444;
+  --color-scale-note: #60a5fa;
+  --color-fretboard: #2d1f15;
+  --color-primary-bg: #0f172a;
+  --color-secondary-bg: #1e293b;
+  --color-tertiary-bg: #334155;
+  --color-text-main: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  /* Toggle Component Dark Overrides */
+  --color-toggle-track: var(--color-secondary-bg);
+  --color-toggle-btn-active: var(--color-accent);
+  --color-toggle-text-active: #ffffff;
+  /* Always white on accent */
+  --color-toggle-text-inactive: var(--color-text-muted);
+  --color-toggle-text-hover: var(--color-text-main);
 }
 
 @utility animate-fade-in-up {
@@ -38,7 +73,12 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Montserrat', sans-serif;
   color: var(--color-text-main);
 }

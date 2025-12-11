@@ -402,7 +402,7 @@ const Fretboard = ({
   };
 
   return (
-    <div className="fretboard-container bg-white dark:bg-dark-tertiary-bg rounded-3xl shadow-2xl shadow-indigo-100 dark:shadow-slate-900/50 p-8 border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+    <div className="fretboard-container bg-secondary-bg rounded-3xl shadow-2xl shadow-indigo-100 p-8 border border-tertiary-bg transition-colors duration-300">
       <svg
         ref={svgRef}
         width="100%"

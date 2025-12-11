@@ -8,29 +8,33 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Light mode colors
-        'root-note': '#dc2626',
-        'scale-note': '#2563eb',
-        'fretboard': '#f4e6d4',
-        'primary-bg': '#f5f7fb',
-        'secondary-bg': '#ffffff',
-        'tertiary-bg': '#e2e8f0',
-        'text-main': '#0f172a',
-        'text-muted': '#64748b',
-        'accent': '#2563eb',
-        'accent-hover': '#1d4ed8',
+        'root-note': 'var(--color-root-note)',
+        'scale-note': 'var(--color-scale-note)',
+        'fretboard': 'var(--color-fretboard)',
+        'primary-bg': 'var(--color-primary-bg)',
+        'secondary-bg': 'var(--color-secondary-bg)',
+        'tertiary-bg': 'var(--color-tertiary-bg)',
+        'text-main': 'var(--color-text-main)',
+        'text-muted': 'var(--color-text-muted)',
+        'accent': 'var(--color-accent)',
+        'accent-hover': 'var(--color-accent-hover)',
 
-        // Dark mode colors
-        'dark-primary-bg': '#0f172a',
-        'dark-secondary-bg': '#1e293b',
-        'dark-tertiary-bg': '#334155',
-        'dark-text-main': '#f1f5f9',
-        'dark-text-muted': '#94a3b8',
-        'dark-accent': '#3b82f6',
-        'dark-accent-hover': '#2563eb',
-        'dark-fretboard': '#2d1f15',
-        'dark-root-note': '#ef4444',
-        'dark-scale-note': '#60a5fa',
+        // Aliases for backward compatibility or explicit usage if any remaining
+        'dark-primary-bg': 'var(--color-primary-bg)',
+        'dark-secondary-bg': 'var(--color-secondary-bg)',
+        'dark-tertiary-bg': 'var(--color-tertiary-bg)',
+        'dark-text-main': 'var(--color-text-main)',
+        'dark-text-muted': 'var(--color-text-muted)',
+        'dark-accent': 'var(--color-accent)',
+        'dark-root-note': 'var(--color-root-note)',
+        'dark-scale-note': 'var(--color-scale-note)',
+
+        // Toggle Component
+        'toggle-track': 'var(--color-toggle-track)',
+        'toggle-btn-active': 'var(--color-toggle-btn-active)',
+        'toggle-text-active': 'var(--color-toggle-text-active)',
+        'toggle-text-inactive': 'var(--color-toggle-text-inactive)',
+        'toggle-text-hover': 'var(--color-toggle-text-hover)',
       },
       fontFamily: {
         sans: ['Open Sans', 'sans-serif'],

@@ -7,13 +7,13 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="fixed top-6 right-6 z-50 p-3 rounded-full bg-secondary-bg dark:bg-dark-secondary-bg border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+      className="fixed top-6 right-6 z-50 p-3 rounded-full bg-secondary-bg border border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
       aria-label="Toggle theme"
     >
       {theme === 'light' ? (
         // Moon icon for dark mode
         <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300 group-hover:text-accent dark:group-hover:text-dark-accent transition-colors"
+          className="w-6 h-6 text-slate-700 group-hover:text-accent transition-colors"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -28,7 +28,7 @@ const ThemeToggle = () => {
       ) : (
         // Sun icon for light mode
         <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300 group-hover:text-accent dark:group-hover:text-dark-accent transition-colors"
+          className="w-6 h-6 text-slate-700 group-hover:text-accent transition-colors"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
