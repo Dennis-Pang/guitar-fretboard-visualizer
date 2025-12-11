@@ -2,17 +2,134 @@
  * Fretboard 组件 - 吉他指板可视化
  */
 
-import React from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { FRET_COUNT, STRING_COUNT, STANDARD_TUNING, FRET_MARKERS, COLORS } from '../utils/constants';
 import { getNoteDisplayText } from '../utils/musicTheory';
 
-const Fretboard = ({ highlightedPositions = [], showDegree = false }) => {
+const noop = () => {};
+
+const Fretboard = ({
+  highlightedPositions = [],
+  showDegree = false,
+  selectedPositionKeys = new Set(),
+  onToggleNote = noop,
+  onAreaSelect = noop
+}) => {
   // SVG 尺寸配置
   const width = 1200;
   const height = 400;
   const fretSpacing = width / (FRET_COUNT + 1);
   const stringSpacing = height / (STRING_COUNT + 1);
   const nutWidth = 40; // 琴枕宽度
+  const svgRef = useRef(null);
+  const [selectionRect, setSelectionRect] = useState(null);
+  const [isSelecting, setIsSelecting] = useState(false);
+
+  const noteLayouts = useMemo(() => (
+    highlightedPositions.map((position, index) => {
+      const x = position.fret === 0
+        ? nutWidth / 2
+        : nutWidth + fretSpacing * position.fret - fretSpacing / 2;
+      const y = stringSpacing * (position.string + 1);
+
+      return {
+        ...position,
+        x,
+        y,
+        key: `${position.string}-${position.fret}`,
+        gradientId: position.isRoot
+          ? `root-gradient-${index}`
+          : `scale-gradient-${index}`,
+        displayText: getNoteDisplayText(position, showDegree)
+      };
+    })
+  ), [highlightedPositions, fretSpacing, stringSpacing, showDegree]);
+
+  const normalizeRect = (rect) => {
+    if (!rect) return null;
+    const x = Math.min(rect.x1, rect.x2);
+    const y = Math.min(rect.y1, rect.y2);
+    const width = Math.abs(rect.x2 - rect.x1);
+    const height = Math.abs(rect.y2 - rect.y1);
+    return { x, y, width, height };
+  };
+
+  const selectionRectNormalized = normalizeRect(selectionRect);
+
+  const getRelativePoint = (event) => {
+    if (!svgRef.current) return null;
+    const rect = svgRef.current.getBoundingClientRect();
+    const xRatio = (event.clientX - rect.left) / rect.width;
+    const yRatio = (event.clientY - rect.top) / rect.height;
+
+    return {
+      x: xRatio * width,
+      y: yRatio * height
+    };
+  };
+
+  const handlePointerDown = (event) => {
+    if (event.target.closest('[data-note-node="true"]')) {
+      return;
+    }
+
+    const relativePoint = getRelativePoint(event);
+    if (!relativePoint) return;
+
+    setIsSelecting(true);
+    setSelectionRect({ x1: relativePoint.x, y1: relativePoint.y, x2: relativePoint.x, y2: relativePoint.y });
+    svgRef.current?.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!isSelecting) return;
+    event.preventDefault();
+    const relativePoint = getRelativePoint(event);
+    if (!relativePoint) return;
+
+    setSelectionRect((current) => ({
+      ...(current || relativePoint),
+      x2: relativePoint.x,
+      y2: relativePoint.y
+    }));
+  };
+
+  const finalizeSelection = (event) => {
+    if (isSelecting && selectionRect) {
+      const normalized = normalizeRect(selectionRect);
+      if (normalized) {
+        const selectedNotes = noteLayouts
+          .filter(note =>
+            note.x >= normalized.x &&
+            note.x <= normalized.x + normalized.width &&
+            note.y >= normalized.y &&
+            note.y <= normalized.y + normalized.height
+          )
+          .map(({ string, fret, note, degree, isRoot }) => ({ string, fret, note, degree, isRoot }));
+
+        if (selectedNotes.length > 0) {
+          onAreaSelect(selectedNotes);
+        }
+      }
+    }
+
+    if (isSelecting && event) {
+      svgRef.current?.releasePointerCapture?.(event.pointerId);
+    }
+
+    setIsSelecting(false);
+    setSelectionRect(null);
+  };
+
+  const handlePointerUp = (event) => {
+    finalizeSelection(event);
+  };
+
+  const handlePointerLeave = () => {
+    if (isSelecting) {
+      finalizeSelection();
+    }
+  };
 
   /**
    * 渲染弦
@@ -165,23 +282,21 @@ const Fretboard = ({ highlightedPositions = [], showDegree = false }) => {
    * 渲染高亮的音符
    */
   const renderHighlightedNotes = () => {
-    return highlightedPositions.map((position, index) => {
-      const { string, fret, isRoot } = position;
-
-      // 计算坐标
-      const x = fret === 0
-        ? nutWidth / 2  // 空弦位置
-        : nutWidth + fretSpacing * fret - fretSpacing / 2;  // 品格中间
-      const y = stringSpacing * (string + 1);
-
-      // 颜色:根音用红色渐变,其他用蓝色渐变
-      const gradientId = isRoot ? `root-gradient-${index}` : `scale-gradient-${index}`;
-
-      // 显示文本
-      const displayText = getNoteDisplayText(position, showDegree);
+    return noteLayouts.map((noteLayout) => {
+      const { key, isRoot, x, y, gradientId, displayText } = noteLayout;
+      const isSelected = selectedPositionKeys?.has(key);
+      const glowColor = isRoot ? '#ff5555' : '#4dabf7';
 
       return (
-        <g key={`note-${index}`}>
+        <g
+          key={key}
+          data-note-node="true"
+          className="cursor-pointer"
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleNote(noteLayout);
+          }}
+        >
           {/* 定义渐变 */}
           <defs>
             <radialGradient id={gradientId}>
@@ -194,10 +309,23 @@ const Fretboard = ({ highlightedPositions = [], showDegree = false }) => {
           <circle
             cx={x}
             cy={y}
-            r={22}
-            fill={isRoot ? '#ff5555' : '#4dabf7'}
-            opacity={0.3}
+            r={isSelected ? 26 : 22}
+            fill={glowColor}
+            opacity={isSelected ? 0.4 : 0.3}
           />
+
+          {/* 选中描边 */}
+          {isSelected && (
+            <circle
+              cx={x}
+              cy={y}
+              r={24}
+              fill="none"
+              stroke="#fcd34d"
+              strokeWidth={3}
+              opacity={0.9}
+            />
+          )}
 
           {/* 音符阴影 */}
           <circle
@@ -214,7 +342,7 @@ const Fretboard = ({ highlightedPositions = [], showDegree = false }) => {
             cy={y}
             r={20}
             fill={`url(#${gradientId})`}
-            stroke="white"
+            stroke={isSelected ? '#fbbf24' : 'white'}
             strokeWidth={3}
             opacity={0.95}
           />
@@ -239,10 +367,15 @@ const Fretboard = ({ highlightedPositions = [], showDegree = false }) => {
   return (
     <div className="fretboard-container bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
       <svg
+        ref={svgRef}
         width="100%"
         height="100%"
         viewBox={`0 0 ${width} ${height}`}
         className="fretboard-svg drop-shadow-2xl"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
       >
         {/* 定义木纹效果 */}
         <defs>
@@ -287,6 +420,22 @@ const Fretboard = ({ highlightedPositions = [], showDegree = false }) => {
 
         {/* 品丝 */}
         {renderFrets()}
+
+        {/* 选区 */}
+        {selectionRectNormalized && (
+          <rect
+            x={selectionRectNormalized.x}
+            y={selectionRectNormalized.y}
+            width={selectionRectNormalized.width}
+            height={selectionRectNormalized.height}
+            fill="rgba(59,130,246,0.15)"
+            stroke="#3b82f6"
+            strokeDasharray="6 4"
+            strokeWidth={2}
+            rx={6}
+            pointerEvents="none"
+          />
+        )}
 
         {/* 高亮音符 */}
         {renderHighlightedNotes()}

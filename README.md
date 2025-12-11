@@ -1,16 +1,62 @@
-# React + Vite
+# Guitar Fretboard Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个基于 React + Vite 的吉他指板可视化工具。选择根音、音阶系统与调式后，页面会智能计算音名、音级并映射到整块指板，帮助你快速记忆不同位置的音阶形状。支持点击或框选需要重点记忆的音，形成专属的练习路径。
 
-Currently, two official plugins are available:
+> 该项目主要使用 React、Tailwind 以及 SVG 自定义绘制，完全前端渲染，无需后端。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ 功能特性
 
-## React Compiler
+- **多音阶系统**：支持五声音阶、自然大调、旋律小调、和声小调、减音阶与全音阶等模式。
+- **智能音名/级数显示**：可自由切换音符显示（Note）与级数显示（Degree），并使用音乐理论规则自动拼写音名。
+- **可视化吉他指板**：自定义木纹背景、品记、弦粗细与渐变高亮，让指板信息一目了然。
+- **音符高亮 & 根音强调**：根音与其它音符采用不同渐变配色，帮助快速定位主音。
+- **交互式选择**：新增的点击/框选功能可点亮任意音符，便于自定义记忆路径或区分指法。
+- **兼容和弦提示**：控制面板底部会展示当前调式常用和弦，便于和声练习。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 快速开始
 
-## Expanding the ESLint configuration
+```bash
+# 安装依赖
+npm install
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# 开发模式（默认在 http://localhost:5173）
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览构建产物
+npm run preview
+```
+
+## 🧭 使用指南
+
+1. 在顶部控制面板依次选择 Root、System、Mode。应用会自动计算对应音阶的所有音符并映射至指板。
+2. 使用右侧 `Note/Degree` 开关切换显示文本。
+3. **点击音符**即可将其加入“我的音符”集合，再次点击可取消。
+4. **框选操作**：在指板空白处按住鼠标拖拽，会出现半透明的蓝色选择框，松开后框内的音符全部加入“我的音符”。
+5. 调整音阶或调式时，系统会刷新音符并清空自选集合，从而保持信息准确。
+
+## 🗂️ 主要目录结构
+
+```
+├── src
+│   ├── components
+│   │   ├── ControlPanel.jsx   # 控制面板（根音/音阶/调式/显示切换）
+│   │   └── Fretboard.jsx      # 指板 SVG 渲染与交互逻辑
+│   ├── utils
+│   │   ├── constants.js       # 指板与音乐常量配置
+│   │   ├── musicTheory.js     # 音名计算、指板匹配等核心算法
+│   │   └── scaleDefinitions.js# 各音阶系统的模式/间隔定义
+│   ├── App.jsx                # 主页面，管理全局状态
+│   └── main.jsx               # React 入口
+└── public / dist / ...        # 静态资源与构建输出
+```
+
+## 🧠 自定义音符选择说明
+
+- `Fretboard.jsx` 通过 `pointer` 事件监听拖拽区域，并将落在矩形范围内的音符回传给 `App.jsx`。
+- `App.jsx` 维护一个 `selectedPositionKeys` 集合用于标记用户自选音符，切换音阶时会重置该集合。
+- 被选中的音符会获得额外的金色描边与更强的发光效果，帮助你区分需要重点记忆的位置。
+
+欢迎继续扩展更多练习模式（如显示指法、节奏练习、导入自定义音阶等），让指板学习更高效、更有趣！

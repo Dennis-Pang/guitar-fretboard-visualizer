@@ -3,9 +3,35 @@
  * 包含根音选择器、音阶系统选择器、调式选择器、级数开关
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ROOT_NOTES, SCALE_SYSTEMS } from '../utils/constants';
 import { getAllModes } from '../utils/scaleDefinitions';
+import { getNoteIndex } from '../utils/musicTheory';
+
+const NOTE_NAMES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const NOTE_NAMES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+const DIMINISHED_OFFSETS = [0, 3, 6, 9];
+const FLAT_FRIENDLY_INDICES = new Set([1, 3, 6, 8, 10]);
+
+const getPreferredNoteName = (index, preferFlat) => {
+  const normalized = ((index % 12) + 12) % 12;
+  if (preferFlat || FLAT_FRIENDLY_INDICES.has(normalized)) {
+    return NOTE_NAMES_FLAT[normalized];
+  }
+  return NOTE_NAMES_SHARP[normalized];
+};
+
+const getDiminishedChordSuggestions = (rootNote) => {
+  const rootIndex = getNoteIndex(rootNote);
+  const preferFlat = rootNote.includes('b');
+
+  return DIMINISHED_OFFSETS.map(offset => {
+    const noteName = offset === 0
+      ? rootNote
+      : getPreferredNoteName(rootIndex + offset, preferFlat);
+    return `${noteName}dim7`;
+  });
+};
 
 const ControlPanel = ({
   rootNote,
@@ -20,6 +46,24 @@ const ControlPanel = ({
   // 获取当前音阶系统的所有调式
   const availableModes = getAllModes(scaleSystem);
   const currentMode = availableModes.find(m => m.id === mode);
+
+  const chordSuggestions = useMemo(() => {
+    if (!currentMode) return [];
+
+    if (scaleSystem === 'diminished') {
+      return getDiminishedChordSuggestions(rootNote);
+    }
+
+    if (scaleSystem === 'wholeTone') {
+      return [];
+    }
+
+    if (currentMode.chords && currentMode.chords.length > 0) {
+      return currentMode.chords.map(chord => `${rootNote}${chord}`);
+    }
+
+    return [];
+  }, [currentMode, rootNote, scaleSystem]);
 
   return (
     <div className="control-panel w-full max-w-[1200px] mx-auto mb-8 animate-fade-in-up px-4 md:px-0">
@@ -126,20 +170,19 @@ const ControlPanel = ({
         </div>
 
         {/* 5. 推荐和弦显示区域 */}
-        {currentMode?.chords && currentMode.chords.length > 0 && (
+        {chordSuggestions.length > 0 && (
           <div className="mt-6 pt-4 border-t border-white/5">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 Compatible Chords
               </span>
               <div className="flex flex-wrap gap-2">
-                {currentMode.chords.map((chord, index) => (
+                {chordSuggestions.map((chord, index) => (
                   <div
                     key={index}
                     className="px-3 py-1 bg-slate-800/50 border border-slate-700/50 rounded-full text-xs font-mono text-blue-200 shadow-sm"
                   >
-                    <span className="font-bold text-white">{rootNote}</span>
-                    <span className="opacity-90">{chord}</span>
+                    <span className="font-bold text-white">{chord}</span>
                   </div>
                 ))}
               </div>

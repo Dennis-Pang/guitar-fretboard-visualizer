@@ -14,6 +14,9 @@ function App() {
   const [mode, setMode] = useState('pentatonicMinor');
   const [showDegree, setShowDegree] = useState(false);
   const [highlightedPositions, setHighlightedPositions] = useState([]);
+  const [selectedPositionKeys, setSelectedPositionKeys] = useState(new Set());
+
+  const createPositionKey = (stringIndex, fret) => `${stringIndex}-${fret}`;
 
   // 当根音、音阶系统或调式改变时,重新计算高亮位置
   useEffect(() => {
@@ -28,7 +31,38 @@ function App() {
 
     // 4. 更新状态
     setHighlightedPositions(positions);
+    setSelectedPositionKeys(new Set());
   }, [rootNote, scaleSystem, mode]);
+
+  const handleToggleNoteSelection = (position) => {
+    if (!position) return;
+
+    setSelectedPositionKeys((prev) => {
+      const next = new Set(prev);
+      const key = createPositionKey(position.string, position.fret);
+
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+
+      return next;
+    });
+  };
+
+  const handleAreaSelect = (positions = []) => {
+    if (!positions.length) return;
+
+    setSelectedPositionKeys((prev) => {
+      const next = new Set(prev);
+      positions.forEach((pos) => {
+        const key = createPositionKey(pos.string, pos.fret);
+        next.add(key);
+      });
+      return next;
+    });
+  };
 
   // 当音阶系统改变时,重置调式为第一个调式
   const handleScaleSystemChange = (newSystem) => {
@@ -76,6 +110,9 @@ function App() {
             <Fretboard
               highlightedPositions={highlightedPositions}
               showDegree={showDegree}
+              selectedPositionKeys={selectedPositionKeys}
+              onToggleNote={handleToggleNoteSelection}
+              onAreaSelect={handleAreaSelect}
             />
           </div>
         </div>
