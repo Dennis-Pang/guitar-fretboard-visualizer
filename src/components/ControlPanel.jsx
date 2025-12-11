@@ -124,6 +124,28 @@ const ControlPanel = ({
             </div>
           </div>
         </div>
+
+        {/* 5. 推荐和弦显示区域 */}
+        {currentMode?.chords && currentMode.chords.length > 0 && (
+          <div className="mt-6 pt-4 border-t border-white/5">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                Compatible Chords
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {currentMode.chords.map((chord, index) => (
+                  <div
+                    key={index}
+                    className="px-3 py-1 bg-slate-800/50 border border-slate-700/50 rounded-full text-xs font-mono text-blue-200 shadow-sm"
+                  >
+                    <span className="font-bold text-white">{rootNote}</span>
+                    <span className="opacity-90">{chord}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
