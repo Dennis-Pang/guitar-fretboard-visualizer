@@ -5,6 +5,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { FRET_COUNT, STRING_COUNT, STANDARD_TUNING, FRET_MARKERS, COLORS } from '../utils/constants';
 import { getNoteDisplayText } from '../utils/musicTheory';
+import { useTheme } from '../contexts/ThemeContext';
 
 const noop = () => { };
 
@@ -15,6 +16,42 @@ const Fretboard = ({
   onToggleNote = noop,
   onAreaSelect = noop
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  // Theme-based colors
+  const colors = {
+    // Fretboard background
+    fretboardBase: isDark ? ['#1e1410', '#0f0a08'] : ['#fdfaf5', '#eadcc8'],
+    fretboardGrain: isDark ? '#2d1f15' : '#f5e7d4',
+    grainPattern1: isDark ? '#1a0f0b' : '#e3d0b9',
+    grainPattern2: isDark ? '#251812' : '#e9d7c0',
+
+    // Strings
+    stringColor: isDark ? '#8b7355' : '#c8a66c',
+    stringLabel: isDark ? '#94a3b8' : '#334155',
+
+    // Frets
+    nutColor: isDark ? '#8b7355' : '#cbd5f5',
+    fretColor: isDark ? '#64748b' : '#94a3b8',
+    fretLabel: isDark ? '#64748b' : '#475569',
+
+    // Fret markers
+    markerColor: isDark ? '#64532f' : '#d4b48b',
+
+    // Notes
+    rootNote: isDark ? '#ef4444' : '#dc2626',
+    rootNoteEnd: isDark ? '#b91c1c' : '#991b1b',
+    scaleNote: isDark ? '#60a5fa' : '#2563eb',
+    scaleNoteEnd: isDark ? '#2563eb' : '#1d4ed8',
+    noteStroke: isDark ? '#1e293b' : '#f8fafc',
+    noteText: '#ffffff',
+
+    // Selection
+    selectionFill: isDark ? 'rgba(59,130,246,0.2)' : 'rgba(37,99,235,0.15)',
+    selectionStroke: isDark ? '#3b82f6' : '#2563eb',
+  };
+
   // SVG 尺寸配置
   const width = 1200;
   const height = 400;
@@ -157,7 +194,7 @@ const Fretboard = ({
             y1={y}
             x2={width}
             y2={y}
-            stroke="#c8a66c"
+            stroke={colors.stringColor}
             strokeWidth={stringWidth}
             opacity={0.8}
           />
@@ -166,7 +203,7 @@ const Fretboard = ({
             x={15}
             y={y + 5}
             fontSize="16"
-            fill="#334155"
+            fill={colors.stringLabel}
             fontWeight="bold"
             opacity={0.9}
           >
@@ -207,7 +244,7 @@ const Fretboard = ({
             y1={stringSpacing}
             x2={x}
             y2={height - stringSpacing}
-            stroke={fret === 0 ? '#cbd5f5' : '#94a3b8'}
+            stroke={fret === 0 ? colors.nutColor : colors.fretColor}
             strokeWidth={strokeWidth}
             opacity={0.9}
           />
@@ -222,7 +259,7 @@ const Fretboard = ({
             x={x - fretSpacing / 2}
             y={height - 15}
             fontSize="14"
-            fill="#475569"
+            fill={colors.fretLabel}
             fontWeight="bold"
             textAnchor="middle"
             opacity={0.6}
@@ -252,7 +289,7 @@ const Fretboard = ({
           {/* 品记阴影 */}
           <circle cx={x + 1} cy={y + 1} r={8} fill="#000" opacity={0.2} />
           {/* 品记 */}
-          <circle cx={x} cy={y} r={8} fill="#d4b48b" opacity={0.8} />
+          <circle cx={x} cy={y} r={8} fill={colors.markerColor} opacity={0.8} />
         </g>
       );
     });
@@ -267,10 +304,10 @@ const Fretboard = ({
         <g key={`marker-double-${fret}`}>
           {/* 上圆点 */}
           <circle cx={x + 1} cy={y1 + 1} r={8} fill="#000" opacity={0.2} />
-          <circle cx={x} cy={y1} r={8} fill="#d4b48b" opacity={0.8} />
+          <circle cx={x} cy={y1} r={8} fill={colors.markerColor} opacity={0.8} />
           {/* 下圆点 */}
           <circle cx={x + 1} cy={y2 + 1} r={8} fill="#000" opacity={0.2} />
-          <circle cx={x} cy={y2} r={8} fill="#d4b48b" opacity={0.8} />
+          <circle cx={x} cy={y2} r={8} fill={colors.markerColor} opacity={0.8} />
         </g>
       );
     });
@@ -285,7 +322,7 @@ const Fretboard = ({
     return noteLayouts.map((noteLayout) => {
       const { key, isRoot, x, y, gradientId, displayText } = noteLayout;
       const isSelected = selectedPositionKeys?.has(key);
-      const glowColor = isRoot ? '#dc2626' : '#2563eb';
+      const glowColor = isRoot ? colors.rootNote : colors.scaleNote;
 
       return (
         <g
@@ -300,8 +337,8 @@ const Fretboard = ({
           {/* 定义渐变 */}
           <defs>
             <radialGradient id={gradientId}>
-              <stop offset="0%" stopColor={isRoot ? '#dc2626' : '#2563eb'} />
-              <stop offset="100%" stopColor={isRoot ? '#991b1b' : '#1d4ed8'} />
+              <stop offset="0%" stopColor={isRoot ? colors.rootNote : colors.scaleNote} />
+              <stop offset="100%" stopColor={isRoot ? colors.rootNoteEnd : colors.scaleNoteEnd} />
             </radialGradient>
           </defs>
 
@@ -342,7 +379,7 @@ const Fretboard = ({
             cy={y}
             r={20}
             fill={`url(#${gradientId})`}
-            stroke={isSelected ? '#fbbf24' : '#f8fafc'}
+            stroke={isSelected ? '#fbbf24' : colors.noteStroke}
             strokeWidth={3}
             opacity={0.95}
           />
@@ -365,7 +402,7 @@ const Fretboard = ({
   };
 
   return (
-    <div className="fretboard-container bg-white rounded-3xl shadow-2xl shadow-indigo-100 p-8 border border-slate-200">
+    <div className="fretboard-container bg-white dark:bg-dark-tertiary-bg rounded-3xl shadow-2xl shadow-indigo-100 dark:shadow-slate-900/50 p-8 border border-slate-200 dark:border-slate-700 transition-colors duration-300">
       <svg
         ref={svgRef}
         width="100%"
@@ -379,13 +416,13 @@ const Fretboard = ({
       >
         <defs>
           <linearGradient id="fretboard-base" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#fdfaf5" />
-            <stop offset="100%" stopColor="#eadcc8" />
+            <stop offset="0%" stopColor={colors.fretboardBase[0]} />
+            <stop offset="100%" stopColor={colors.fretboardBase[1]} />
           </linearGradient>
           <pattern id="fretboard-grain" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-            <rect width="80" height="80" fill="#f5e7d4" />
-            <ellipse cx="40" cy="40" rx="28" ry="10" fill="#e3d0b9" opacity="0.4" />
-            <ellipse cx="60" cy="20" rx="15" ry="8" fill="#e9d7c0" opacity="0.2" />
+            <rect width="80" height="80" fill={colors.fretboardGrain} />
+            <ellipse cx="40" cy="40" rx="28" ry="10" fill={colors.grainPattern1} opacity="0.4" />
+            <ellipse cx="60" cy="20" rx="15" ry="8" fill={colors.grainPattern2} opacity="0.2" />
           </pattern>
         </defs>
 
@@ -424,8 +461,8 @@ const Fretboard = ({
             y={selectionRectNormalized.y}
             width={selectionRectNormalized.width}
             height={selectionRectNormalized.height}
-            fill="rgba(37,99,235,0.15)"
-            stroke="#2563eb"
+            fill={colors.selectionFill}
+            stroke={colors.selectionStroke}
             strokeDasharray="6 4"
             strokeWidth={2}
             rx={8}

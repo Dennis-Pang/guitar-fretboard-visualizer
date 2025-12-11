@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import Fretboard from './components/Fretboard';
 import ControlPanel from './components/ControlPanel';
+import ThemeToggle from './components/ThemeToggle';
 import { calculateScale, calculateFretboardNotes, matchScaleToFretboard } from './utils/musicTheory';
 
 function App() {
@@ -81,11 +82,14 @@ function App() {
   };
 
   return (
-    <div className="app min-h-screen bg-gradient-to-br from-primary-bg via-white to-tertiary-bg py-8 px-4 md:py-12 md:px-6 font-sans text-text-main selection:bg-accent selection:text-white">
-      {/* 背景装饰 - 简约 */}
+    <div className="app min-h-screen bg-gradient-to-br from-primary-bg via-white to-tertiary-bg dark:from-dark-primary-bg dark:via-dark-secondary-bg dark:to-dark-tertiary-bg py-8 px-4 md:py-12 md:px-6 font-sans text-text-main dark:text-dark-text-main selection:bg-accent dark:selection:bg-dark-accent selection:text-white transition-colors duration-300">
+      {/* 主题切换按钮 */}
+      <ThemeToggle />
+
+      {/* 背景装饰 */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent opacity-70"></div>
-        <div className="absolute bottom-0 right-0 w-[460px] h-[460px] bg-accent/15 rounded-full blur-[140px]"></div>
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent dark:from-dark-secondary-bg dark:to-transparent opacity-70 dark:opacity-40"></div>
+        <div className="absolute bottom-0 right-0 w-[460px] h-[460px] bg-accent/15 dark:bg-dark-accent/10 rounded-full blur-[140px]"></div>
       </div>
 
       {/* 主内容区域 */}
@@ -103,7 +107,7 @@ function App() {
         />
 
         {/* 指板 - 添加容器样式 */}
-        <div className="w-full bg-secondary-bg/90 rounded-3xl p-2 md:p-4 border border-slate-200 shadow-xl shadow-indigo-100 animate-fade-in-up [animation-delay:200ms] overflow-x-auto">
+        <div className="w-full bg-secondary-bg/90 dark:bg-dark-secondary-bg/90 rounded-3xl p-2 md:p-4 border border-slate-200 dark:border-slate-700 shadow-xl shadow-indigo-100 dark:shadow-slate-900/50 animate-fade-in-up [animation-delay:200ms] overflow-x-auto transition-colors duration-300">
           <div className="min-w-[800px] md:min-w-full">
             <Fretboard
               highlightedPositions={highlightedPositions}
