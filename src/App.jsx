@@ -56,11 +56,22 @@ function App() {
     if (!positions.length) return;
 
     setSelectedPositionKeys((prev) => {
+      // 1. 获取所有选中区域的 key
+      const keysToProcess = positions.map(pos => createPositionKey(pos.string, pos.fret));
+
+      // 2. 检查这些 key 是否全部都已经被选中
+      const allAlreadySelected = keysToProcess.every(key => prev.has(key));
+
       const next = new Set(prev);
-      positions.forEach((pos) => {
-        const key = createPositionKey(pos.string, pos.fret);
-        next.add(key);
-      });
+
+      if (allAlreadySelected) {
+        // 如果全部都已经选中，则是"反选模式" (Remove Mode) -> 从选区中移除
+        keysToProcess.forEach(key => next.delete(key));
+      } else {
+        // 否则是"添加模式" (Add Mode) -> 加入选区
+        keysToProcess.forEach(key => next.add(key));
+      }
+
       return next;
     });
   };
