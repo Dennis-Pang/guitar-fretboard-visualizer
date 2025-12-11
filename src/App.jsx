@@ -81,13 +81,11 @@ function App() {
   };
 
   return (
-    <div className="app min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black py-8 px-4 md:py-12 md:px-6">
-      {/* 背景装饰 */}
-      {/* ... existing decorations ... */}
+    <div className="app min-h-screen bg-gradient-to-br from-primary-bg via-white to-tertiary-bg py-8 px-4 md:py-12 md:px-6 font-sans text-text-main selection:bg-accent selection:text-white">
+      {/* 背景装饰 - 简约 */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse"></div>
-        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen animate-pulse delay-1000"></div>
-        <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-pink-600/5 rounded-full blur-[80px] mix-blend-screen"></div>
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent opacity-70"></div>
+        <div className="absolute bottom-0 right-0 w-[460px] h-[460px] bg-accent/15 rounded-full blur-[140px]"></div>
       </div>
 
       {/* 主内容区域 */}
@@ -105,7 +103,7 @@ function App() {
         />
 
         {/* 指板 - 添加容器样式 */}
-        <div className="w-full bg-slate-900/50 backdrop-blur-md rounded-3xl p-2 md:p-4 border border-white/5 shadow-2xl animate-fade-in-up [animation-delay:200ms] overflow-x-auto custom-scrollbar">
+        <div className="w-full bg-secondary-bg/90 rounded-3xl p-2 md:p-4 border border-slate-200 shadow-xl shadow-indigo-100 animate-fade-in-up [animation-delay:200ms] overflow-x-auto">
           <div className="min-w-[800px] md:min-w-full">
             <Fretboard
               highlightedPositions={highlightedPositions}

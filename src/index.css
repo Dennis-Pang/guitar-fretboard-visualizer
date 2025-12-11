@@ -1,9 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-root-note: #EF4444;
-  --color-scale-note: #3B82F6;
-  --color-fretboard: #3E2723;
+  --color-root-note: #dc2626;
+  --color-scale-note: #2563eb;
+  --color-fretboard: #f4e6d4;
+  --color-primary-bg: #f5f7fb;
+  --color-secondary-bg: #ffffff;
+  --color-tertiary-bg: #e2e8f0;
+  --color-text-main: #0f172a;
+  --color-text-muted: #64748b;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
 }
 
 @utility animate-fade-in-up {
@@ -26,12 +33,16 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #020617;
-  /* bg-slate-950 */
-  color: #e2e8f0;
-  /* text-slate-200 */
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-primary-bg);
+  color: var(--color-text-main);
+  font-family: 'Open Sans', sans-serif;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--color-text-main);
+}
+
 
 * {
   box-sizing: border-box;

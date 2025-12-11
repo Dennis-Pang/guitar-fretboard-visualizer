@@ -6,7 +6,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { FRET_COUNT, STRING_COUNT, STANDARD_TUNING, FRET_MARKERS, COLORS } from '../utils/constants';
 import { getNoteDisplayText } from '../utils/musicTheory';
 
-const noop = () => {};
+const noop = () => { };
 
 const Fretboard = ({
   highlightedPositions = [],
@@ -149,7 +149,7 @@ const Fretboard = ({
             y2={y + 1}
             stroke="#000"
             strokeWidth={stringWidth}
-            opacity={0.2}
+            opacity={0.08}
           />
           {/* 弦线 */}
           <line
@@ -157,7 +157,7 @@ const Fretboard = ({
             y1={y}
             x2={width}
             y2={y}
-            stroke="#d4af37"
+            stroke="#c8a66c"
             strokeWidth={stringWidth}
             opacity={0.8}
           />
@@ -166,7 +166,7 @@ const Fretboard = ({
             x={15}
             y={y + 5}
             fontSize="16"
-            fill="#fff"
+            fill="#334155"
             fontWeight="bold"
             opacity={0.9}
           >
@@ -207,7 +207,7 @@ const Fretboard = ({
             y1={stringSpacing}
             x2={x}
             y2={height - stringSpacing}
-            stroke={fret === 0 ? '#e5e5e5' : '#c0c0c0'}
+            stroke={fret === 0 ? '#cbd5f5' : '#94a3b8'}
             strokeWidth={strokeWidth}
             opacity={0.9}
           />
@@ -222,7 +222,7 @@ const Fretboard = ({
             x={x - fretSpacing / 2}
             y={height - 15}
             fontSize="14"
-            fill="#fff"
+            fill="#475569"
             fontWeight="bold"
             textAnchor="middle"
             opacity={0.6}
@@ -250,9 +250,9 @@ const Fretboard = ({
       markers.push(
         <g key={`marker-single-${fret}`}>
           {/* 品记阴影 */}
-          <circle cx={x + 1} cy={y + 1} r={10} fill="#000" opacity={0.3} />
+          <circle cx={x + 1} cy={y + 1} r={8} fill="#000" opacity={0.2} />
           {/* 品记 */}
-          <circle cx={x} cy={y} r={10} fill="#8b7355" opacity={0.7} />
+          <circle cx={x} cy={y} r={8} fill="#d4b48b" opacity={0.8} />
         </g>
       );
     });
@@ -266,11 +266,11 @@ const Fretboard = ({
       markers.push(
         <g key={`marker-double-${fret}`}>
           {/* 上圆点 */}
-          <circle cx={x + 1} cy={y1 + 1} r={10} fill="#000" opacity={0.3} />
-          <circle cx={x} cy={y1} r={10} fill="#8b7355" opacity={0.7} />
+          <circle cx={x + 1} cy={y1 + 1} r={8} fill="#000" opacity={0.2} />
+          <circle cx={x} cy={y1} r={8} fill="#d4b48b" opacity={0.8} />
           {/* 下圆点 */}
-          <circle cx={x + 1} cy={y2 + 1} r={10} fill="#000" opacity={0.3} />
-          <circle cx={x} cy={y2} r={10} fill="#8b7355" opacity={0.7} />
+          <circle cx={x + 1} cy={y2 + 1} r={8} fill="#000" opacity={0.2} />
+          <circle cx={x} cy={y2} r={8} fill="#d4b48b" opacity={0.8} />
         </g>
       );
     });
@@ -285,7 +285,7 @@ const Fretboard = ({
     return noteLayouts.map((noteLayout) => {
       const { key, isRoot, x, y, gradientId, displayText } = noteLayout;
       const isSelected = selectedPositionKeys?.has(key);
-      const glowColor = isRoot ? '#ff5555' : '#4dabf7';
+      const glowColor = isRoot ? '#dc2626' : '#2563eb';
 
       return (
         <g
@@ -300,8 +300,8 @@ const Fretboard = ({
           {/* 定义渐变 */}
           <defs>
             <radialGradient id={gradientId}>
-              <stop offset="0%" stopColor={isRoot ? '#ff5555' : '#4dabf7'} />
-              <stop offset="100%" stopColor={isRoot ? '#cc0000' : '#1971c2'} />
+              <stop offset="0%" stopColor={isRoot ? '#dc2626' : '#2563eb'} />
+              <stop offset="100%" stopColor={isRoot ? '#991b1b' : '#1d4ed8'} />
             </radialGradient>
           </defs>
 
@@ -342,7 +342,7 @@ const Fretboard = ({
             cy={y}
             r={20}
             fill={`url(#${gradientId})`}
-            stroke={isSelected ? '#fbbf24' : 'white'}
+            stroke={isSelected ? '#fbbf24' : '#f8fafc'}
             strokeWidth={3}
             opacity={0.95}
           />
@@ -365,7 +365,7 @@ const Fretboard = ({
   };
 
   return (
-    <div className="fretboard-container bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+    <div className="fretboard-container bg-white rounded-3xl shadow-2xl shadow-indigo-100 p-8 border border-slate-200">
       <svg
         ref={svgRef}
         width="100%"
@@ -377,39 +377,35 @@ const Fretboard = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
       >
-        {/* 定义木纹效果 */}
         <defs>
-          <pattern id="wood-grain" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-            <rect width="100" height="100" fill="#4a3828" />
-            <ellipse cx="50" cy="50" rx="40" ry="15" fill="#3d2f22" opacity="0.3" />
-          </pattern>
-
-          <linearGradient id="wood-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#5d4a3a" />
-            <stop offset="50%" stopColor="#4a3828" />
-            <stop offset="100%" stopColor="#3d2f22" />
+          <linearGradient id="fretboard-base" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#fdfaf5" />
+            <stop offset="100%" stopColor="#eadcc8" />
           </linearGradient>
+          <pattern id="fretboard-grain" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+            <rect width="80" height="80" fill="#f5e7d4" />
+            <ellipse cx="40" cy="40" rx="28" ry="10" fill="#e3d0b9" opacity="0.4" />
+            <ellipse cx="60" cy="20" rx="15" ry="8" fill="#e9d7c0" opacity="0.2" />
+          </pattern>
         </defs>
 
-        {/* 背景 - 木纹效果 */}
+        {/* 背景 - 亮色木纹 */}
         <rect
           x={0}
           y={0}
           width={width}
           height={height}
-          fill="url(#wood-gradient)"
-          rx={15}
+          fill="url(#fretboard-base)"
+          rx={12}
         />
-
-        {/* 木纹纹理 */}
         <rect
           x={0}
           y={0}
           width={width}
           height={height}
-          fill="url(#wood-grain)"
-          opacity={0.5}
-          rx={15}
+          fill="url(#fretboard-grain)"
+          opacity={0.35}
+          rx={12}
         />
 
         {/* 品记 */}
@@ -428,11 +424,11 @@ const Fretboard = ({
             y={selectionRectNormalized.y}
             width={selectionRectNormalized.width}
             height={selectionRectNormalized.height}
-            fill="rgba(59,130,246,0.15)"
-            stroke="#3b82f6"
+            fill="rgba(37,99,235,0.15)"
+            stroke="#2563eb"
             strokeDasharray="6 4"
             strokeWidth={2}
-            rx={6}
+            rx={8}
             pointerEvents="none"
           />
         )}

@@ -7,10 +7,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        'root-note': '#EF4444',      // 红色 - 根音
-        'scale-note': '#3B82F6',     // 蓝色 - 音阶音符
-        'fretboard': '#3E2723',      // 深棕色 - 指板背景
-      }
+        'root-note': '#dc2626',
+        'scale-note': '#2563eb',
+        'fretboard': '#f4e6d4',
+        'primary-bg': '#f5f7fb',
+        'secondary-bg': '#ffffff',
+        'tertiary-bg': '#e2e8f0',
+        'text-main': '#0f172a',
+        'text-muted': '#64748b',
+        'accent': '#2563eb',
+        'accent-hover': '#1d4ed8',
+      },
+      fontFamily: {
+        sans: ['Open Sans', 'sans-serif'],
+        heading: ['Montserrat', 'sans-serif'],
+      },
     },
   },
   plugins: [],

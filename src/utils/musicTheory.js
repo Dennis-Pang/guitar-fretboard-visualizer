@@ -46,7 +46,7 @@ export const getNoteName = (index) => {
  * @param {number} stepIndex - 在音阶中的第几步 (0-based)
  * @returns {string} 正确拼写的音符名称
  */
-const getSmartNoteName = (rootNote, intervalSum, stepIndex) => {
+const getSmartNoteName = (rootNote, intervalSum, stepIndex, scaleDegree) => {
   const rootIndex = getNoteIndex(rootNote);
   const targetIndex = (rootIndex + intervalSum) % 12;
 
@@ -55,9 +55,25 @@ const getSmartNoteName = (rootNote, intervalSum, stepIndex) => {
   const rootLetter = rootNote.charAt(0);
   const rootLetterIndex = NOTE_LETTERS.indexOf(rootLetter);
 
-  // 目标字母应该是根音字母往后推 stepIndex 个
-  const targetLetterIndex = (rootLetterIndex + stepIndex) % 7;
+  // 优先使用真实的级数来确定字母(如五声音阶跳过2级)
+  let letterShift = stepIndex;
+  if (typeof scaleDegree === 'number' && Number.isFinite(scaleDegree)) {
+    letterShift = (scaleDegree - 1) % 7;
+  }
+
+  // 目标字母应该是根音字母往后推 letterShift 个
+  const targetLetterIndex = (rootLetterIndex + letterShift + 7) % 7;
   const targetLetter = NOTE_LETTERS[targetLetterIndex];
+
+  // 根据与自然大调的偏移猜测使用降号还是升号
+  const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
+  let preferredAccidental = null;
+  if (typeof scaleDegree === 'number' && Number.isFinite(scaleDegree)) {
+    const expectedMajorInterval = majorIntervals[(scaleDegree - 1) % 7];
+    const diff = intervalSum - expectedMajorInterval;
+    if (diff < 0) preferredAccidental = 'flat';
+    if (diff > 0) preferredAccidental = 'sharp';
+  }
 
   // 2. 尝试匹配 Sharp 或 Flat 或 Natural
   // 比如目标是 F，但实际音高对应 'E' (4半音)，那就是 Fb (不常用) 或者是 E
@@ -65,11 +81,17 @@ const getSmartNoteName = (rootNote, intervalSum, stepIndex) => {
 
   // 生成所有可能的变体 (Standard only for now: Natural, Sharp, Flat)
   // 更复杂的比如 Double Sharp/Flat 暂时不处理，除非必要
-  const possibleNotes = [
-    targetLetter,
-    targetLetter + '#',
-    targetLetter + 'b'
-  ];
+  const possibleNotes = [targetLetter];
+  const sharpVariant = `${targetLetter}#`;
+  const flatVariant = `${targetLetter}b`;
+
+  if (preferredAccidental === 'flat') {
+    possibleNotes.push(flatVariant, sharpVariant);
+  } else if (preferredAccidental === 'sharp') {
+    possibleNotes.push(sharpVariant, flatVariant);
+  } else {
+    possibleNotes.push(sharpVariant, flatVariant);
+  }
 
   for (const note of possibleNotes) {
     if (getNoteIndex(note) === targetIndex) {
@@ -165,7 +187,7 @@ export const calculateScale = (rootNote, system, mode) => {
       scaleDegree = explicitDegrees[stepIndex];
     }
 
-    const smartNote = getSmartNoteName(rootNote, currentIntervalSum, stepIndex);
+    const smartNote = getSmartNoteName(rootNote, currentIntervalSum, stepIndex, scaleDegree);
     const degreeLabel = getDegreeLabel(currentIntervalSum, scaleDegree);
 
     scale.push({
