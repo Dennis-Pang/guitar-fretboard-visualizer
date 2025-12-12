@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Fretboard from './components/Fretboard';
 import ControlPanel from './components/ControlPanel';
 import ThemeToggle from './components/ThemeToggle';
-import { calculateScale, calculateFretboardNotes, matchScaleToFretboard } from './utils/musicTheory';
+import { calculateScale, calculateFretboardNotes, matchScaleToFretboard, calculateInversions } from './utils/musicTheory';
 
 function App() {
   // 状态管理
@@ -17,10 +17,19 @@ function App() {
   const [highlightedPositions, setHighlightedPositions] = useState([]);
   const [selectedPositionKeys, setSelectedPositionKeys] = useState(new Set());
 
+  // New State for Inversions
+  const [inversionMode, setInversionMode] = useState(false);
+
   const createPositionKey = (stringIndex, fret) => `${stringIndex}-${fret}`;
 
   // 当根音、音阶系统或调式改变时,重新计算高亮位置
   useEffect(() => {
+    // 如果处于转位模式，且只是切换了其他参数，我们可能想保持转位显示？
+    // 或者更安全的是重置回音阶模式以避免混淆
+    if (inversionMode) {
+      setInversionMode(false);
+    }
+
     // 1. 计算音阶
     const scale = calculateScale(rootNote, scaleSystem, mode);
 
@@ -45,6 +54,14 @@ function App() {
       if (next.has(key)) {
         next.delete(key);
       } else {
+        // Enforce 1 note per string rule
+        // Iterate over current keys, if any has same string index, delete it
+        for (const existingKey of next) {
+          const [strStr] = existingKey.split('-');
+          if (parseInt(strStr) === position.string) {
+            next.delete(existingKey);
+          }
+        }
         next.add(key);
       }
 
@@ -69,11 +86,89 @@ function App() {
         keysToProcess.forEach(key => next.delete(key));
       } else {
         // 否则是"添加模式" (Add Mode) -> 加入选区
-        keysToProcess.forEach(key => next.add(key));
+        // Note: Area select might violate 1-per-string if area covers multiple frets on same string.
+        // We will enforce rule: For each string involved, keep only the LATEST (highest fret? or random?)
+        // Or just let Area Select be powerful and violate rule?
+        // Let's strictly enforce 1-per-string for logical consistency with Inversion generator.
+
+        // Simpler: Just add them, but pre-clean checks? 
+        // Iterate through new positions.
+        const stringMap = new Map(); // stringIndex -> key
+
+        // Populate with existing selection
+        for (const existingKey of prev) {
+          const [s, f] = existingKey.split('-');
+          stringMap.set(parseInt(s), existingKey);
+        }
+
+        // Apply new selection (overwriting existing on conflict)
+        keysToProcess.forEach(key => {
+          const [s, f] = key.split('-');
+          stringMap.set(parseInt(s), key);
+        });
+
+        return new Set(stringMap.values());
       }
 
       return next;
     });
+  };
+
+  // 生成转位
+  const handleGenerateInversions = () => {
+    // 1. Gather note info for selected keys
+    // We need to look up the full note object (note name, etc) from the current visual state
+    // OR recalculate from fretboard knowledge.
+    // Since highlightedPositions contains the current scale notes, and user can only select those (mostly),
+    // we try to find them there. If not found (shouldn't happen if limited), ignore?
+
+    const selectedNotes = [];
+    highlightedPositions.forEach(pos => {
+      const key = createPositionKey(pos.string, pos.fret);
+      if (selectedPositionKeys.has(key)) {
+        selectedNotes.push(pos);
+      }
+    });
+
+    if (selectedNotes.length < 2) {
+      alert("Please select at least 2 notes to generate inversions.");
+      return;
+    }
+
+    const inversions = calculateInversions(selectedNotes);
+
+    // Flatten inversions into a single list of positions for the Fretboard to render
+    // And attach 'color' property
+    const displayPositions = [];
+    inversions.forEach(inv => {
+      inv.notes.forEach(note => {
+        displayPositions.push({
+          ...note,
+          color: inv.color, // Pass the color name
+          // Ensure degree/isRoot logic is handled or bypassed by visualizer
+          isRoot: false, // Override to avoid default coloring logic
+          degree: note.note // Show note name for inversions to avoid '?'
+        });
+      });
+    });
+
+    setHighlightedPositions(displayPositions);
+    setInversionMode(true);
+  };
+
+  const handleClearHighlights = () => {
+    // Return to standard scale view
+    setInversionMode(false);
+    setSelectedPositionKeys(new Set());
+
+    // Recalculate scale (Duplicate logic from useEffect? Or just trigger it?)
+    // Since we updated inversionMode, maybe we can just rely on the effect?
+    // But the effect depends on [root, system, mode]. If those didn't change, effect won't run.
+    // So we must manually restore.
+    const scale = calculateScale(rootNote, scaleSystem, mode);
+    const fretboardNotes = calculateFretboardNotes();
+    const positions = matchScaleToFretboard(scale, fretboardNotes);
+    setHighlightedPositions(positions);
   };
 
   // 当音阶系统改变时,重置调式为第一个调式
@@ -115,6 +210,8 @@ function App() {
           onScaleSystemChange={handleScaleSystemChange}
           onModeChange={setMode}
           onShowDegreeChange={setShowDegree}
+          onGenerateInversions={handleGenerateInversions}
+          onClearHighlights={handleClearHighlights}
         />
 
         {/* 指板 - 添加容器样式 */}
@@ -135,3 +232,4 @@ function App() {
 }
 
 export default App;
+

@@ -272,3 +272,111 @@ export const getNoteDisplayText = (position, showDegree) => {
     return position.note;
   }
 };
+
+/**
+ * 计算和弦转位
+ * @param {Array<{string: number, fret: number, note: string}>} selectedNotes - 用户选中的音符
+ * @param {number} totalFrets - 指板总品数
+ * @returns {Array<{name: string, color: string, notes: Array<Object>}>} 转位组
+ */
+export const calculateInversions = (selectedNotes, totalFrets = FRET_COUNT) => {
+  if (!selectedNotes || selectedNotes.length < 2) return [];
+
+  // 1. 提取去重后的音级序列 (0-11)
+  const chordTones = [...new Set(selectedNotes.map(p => getNoteIndex(p.note)))].sort((a, b) => a - b);
+  const toneCount = chordTones.length;
+
+  const inversions = [];
+  const colors = ['blue', 'green', 'orange', 'purple', 'red', 'yellow']; // 颜色代号，将在组件中映射
+
+  // 初始形状 (按弦排序)
+  let currentShape = [...selectedNotes].sort((a, b) => a.string - b.string);
+
+  // 生成 N 个转位 (包括原位)
+  for (let i = 0; i < toneCount; i++) {
+    const inversionName = i === 0 ? 'Root Position' : `${i}${getOrdinalSuffix(i)} Inversion`;
+
+    // 如果是第一次迭代(i=0), 直接使用用户的选择(经过排序)作为原位
+    // 注意: 用户选择的可能已经是某种转位, 但我们在上下文中将其视为"起始"
+    // 或者, 我们可以重新标准化位置, 但为了尊重用户输入, 我们保留 i=0 为 original selection
+
+    let shape;
+    if (i === 0) {
+      shape = currentShape.map(n => ({
+        ...n,
+        // 重新计算 degree 可能是必要的，如果我们需要准确的 degree 显示
+        // 这里暂时保留原始 note info
+      }));
+    } else {
+      // 基于上一个形状计算下一个
+      const prevShape = inversions[i - 1].notes;
+      shape = prevShape.map(prevNote => {
+        // 找到当前音在 chordTones 中的位置
+        const currentToneIndex = chordTones.indexOf(getNoteIndex(prevNote.note));
+
+        // 下一个目标音 (循环)
+        const nextToneIndex = (currentToneIndex + 1) % toneCount;
+        const targetPitchClass = chordTones[nextToneIndex];
+
+        // 在同弦上寻找位置
+        // 策略: 寻找 > prevFret 的最近位置. 如果超出指板, 则回绕到低要把位
+        // 这样可以模拟在指板上不断上行的效果, 直到尽头
+
+        const nextNoteName = getNoteName(targetPitchClass); // 获取标准Sharp名
+
+        // 计算目标 fret
+        // basic calculation: find smallest k >= 0 such that (stringOpen + k) % 12 == targetPitchClass
+        // constraint: k > prevFret (ascend)
+        // logic: k = prevFret + distance
+        const currentPitch = (getNoteIndex(prevNote.note) + 12) % 12; // sanity check, should equal chordTones[currentToneIndex]
+        const dist = (targetPitchClass - currentPitch + 12) % 12;
+
+        // dist is semitones to next pitch class up
+        // minimal move up is dist, or dist + 12, etc.
+        let nextFret = prevNote.fret + (dist === 0 ? 12 : dist); // If same note, must move octave up
+
+        // 如果超出了指板范围, 尝试寻找该弦上最低的可用位置
+        if (nextFret > totalFrets) {
+          // Find lowest instance on string
+          // openString note index
+          const openNoteIndex = getNoteIndex(STANDARD_TUNING[prevNote.string]);
+          // target note index
+          // diff = target - open
+          let lowFret = (targetPitchClass - openNoteIndex + 12) % 12;
+          nextFret = lowFret;
+        }
+
+        return {
+          string: prevNote.string,
+          fret: nextFret,
+          note: nextNoteName,
+          degree: '?', // 可以重新计算如果需要
+          isRoot: false // 只是个标记
+        };
+      });
+    }
+
+    inversions.push({
+      name: inversionName,
+      color: colors[i % colors.length],
+      notes: shape
+    });
+  }
+
+  return inversions;
+};
+
+const getOrdinalSuffix = (i) => {
+  const j = i % 10,
+    k = i % 100;
+  if (j === 1 && k !== 11) {
+    return "st";
+  }
+  if (j === 2 && k !== 12) {
+    return "nd";
+  }
+  if (j === 3 && k !== 13) {
+    return "rd";
+  }
+  return "th";
+};

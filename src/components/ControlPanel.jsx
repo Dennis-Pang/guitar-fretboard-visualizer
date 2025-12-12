@@ -41,7 +41,9 @@ const ControlPanel = ({
   onRootNoteChange,
   onScaleSystemChange,
   onModeChange,
-  onShowDegreeChange
+  onShowDegreeChange,
+  onGenerateInversions,
+  onClearHighlights
 }) => {
   // 获取当前音阶系统的所有调式
   const availableModes = getAllModes(scaleSystem);
@@ -164,6 +166,28 @@ const ControlPanel = ({
                   }`}
               >
                 Degree
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden lg:block w-px h-12 bg-tertiary-bg mx-2 transition-colors"></div>
+
+          {/* 5. Inversion Controls */}
+          <div className="flex flex-col gap-2 lg:min-w-[140px]">
+            <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Inversion</label>
+            <div className="flex gap-2 h-[46px]">
+              <button
+                onClick={onGenerateInversions}
+                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-3 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap"
+              >
+                Invert
+              </button>
+              <button
+                onClick={onClearHighlights}
+                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-muted hover:text-red-500 text-xs font-bold rounded-xl px-3 transition-colors active:scale-95 whitespace-nowrap"
+                title="Clear All"
+              >
+                Clear
               </button>
             </div>
           </div>

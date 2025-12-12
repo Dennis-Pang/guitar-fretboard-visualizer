@@ -47,9 +47,36 @@ const Fretboard = ({
     noteStroke: isDark ? '#1e293b' : '#f8fafc',
     noteText: '#ffffff',
 
+    // Inversion Colors (Base, Green, Orange, Purple)
+    invBlue: isDark ? '#60a5fa' : '#2563eb',
+    invBlueEnd: isDark ? '#2563eb' : '#1d4ed8',
+    invGreen: isDark ? '#4ade80' : '#16a34a',
+    invGreenEnd: isDark ? '#16a34a' : '#15803d',
+    invOrange: isDark ? '#fb923c' : '#ea580c',
+    invOrangeEnd: isDark ? '#ea580c' : '#c2410c',
+    invPurple: isDark ? '#a78bfa' : '#7c3aed',
+    invPurpleEnd: isDark ? '#7c3aed' : '#5b21b6',
+    invRed: isDark ? '#f87171' : '#dc2626',
+    invRedEnd: isDark ? '#dc2626' : '#991b1b',
+    invYellow: isDark ? '#facc15' : '#ca8a04',
+    invYellowEnd: isDark ? '#ca8a04' : '#a16207',
+
     // Selection
     selectionFill: isDark ? 'rgba(59,130,246,0.2)' : 'rgba(37,99,235,0.15)',
     selectionStroke: isDark ? '#3b82f6' : '#2563eb',
+  };
+
+  const getColorSet = (colorName) => {
+    switch (colorName) {
+      case 'green': return { start: colors.invGreen, end: colors.invGreenEnd };
+      case 'orange': return { start: colors.invOrange, end: colors.invOrangeEnd };
+      case 'purple': return { start: colors.invPurple, end: colors.invPurpleEnd };
+      case 'red': return { start: colors.invRed, end: colors.invRedEnd };
+      case 'yellow': return { start: colors.invYellow, end: colors.invYellowEnd };
+      case 'blue':
+      default:
+        return { start: colors.invBlue, end: colors.invBlueEnd };
+    }
   };
 
   // SVG 尺寸配置
@@ -69,18 +96,21 @@ const Fretboard = ({
         : nutWidth + fretSpacing * position.fret - fretSpacing / 2;
       const y = stringSpacing * (position.string + 1);
 
+      const customColors = position.color ? getColorSet(position.color) : null;
+
       return {
         ...position,
         x,
         y,
         key: `${position.string}-${position.fret}`,
-        gradientId: position.isRoot
-          ? `root-gradient-${index}`
-          : `scale-gradient-${index}`,
+        gradientId: position.color
+          ? `custom-${position.color}-${index}`
+          : (position.isRoot ? `root-gradient-${index}` : `scale-gradient-${index}`),
+        customColors,
         displayText: getNoteDisplayText(position, showDegree)
       };
     })
-  ), [highlightedPositions, fretSpacing, stringSpacing, showDegree]);
+  ), [highlightedPositions, fretSpacing, stringSpacing, showDegree, colors]);
 
   const normalizeRect = (rect) => {
     if (!rect) return null;
@@ -320,9 +350,18 @@ const Fretboard = ({
    */
   const renderHighlightedNotes = () => {
     return noteLayouts.map((noteLayout) => {
-      const { key, isRoot, x, y, gradientId, displayText } = noteLayout;
+      const { key, isRoot, x, y, gradientId, displayText, customColors } = noteLayout;
       const isSelected = selectedPositionKeys?.has(key);
-      const glowColor = isRoot ? colors.rootNote : colors.scaleNote;
+
+      let startColor = isRoot ? colors.rootNote : colors.scaleNote;
+      let endColor = isRoot ? colors.rootNoteEnd : colors.scaleNoteEnd;
+
+      if (customColors) {
+        startColor = customColors.start;
+        endColor = customColors.end;
+      }
+
+      const glowColor = startColor;
 
       return (
         <g
@@ -337,8 +376,8 @@ const Fretboard = ({
           {/* 定义渐变 */}
           <defs>
             <radialGradient id={gradientId}>
-              <stop offset="0%" stopColor={isRoot ? colors.rootNote : colors.scaleNote} />
-              <stop offset="100%" stopColor={isRoot ? colors.rootNoteEnd : colors.scaleNoteEnd} />
+              <stop offset="0%" stopColor={startColor} />
+              <stop offset="100%" stopColor={endColor} />
             </radialGradient>
           </defs>
 
