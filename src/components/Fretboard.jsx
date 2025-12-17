@@ -1,5 +1,5 @@
 /**
- * Fretboard 组件 - 吉他指板可视化
+ * Fretboard Component - Guitar Fretboard Visualization
  */
 
 import React, { useMemo, useRef, useState } from 'react';
@@ -84,7 +84,7 @@ const Fretboard = ({
   const height = 400;
   const fretSpacing = width / (FRET_COUNT + 1);
   const stringSpacing = height / (STRING_COUNT + 1);
-  const nutWidth = 40; // 琴枕宽度
+  const nutWidth = 40; // Nut width
   const svgRef = useRef(null);
   const [selectionRect, setSelectionRect] = useState(null);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -199,16 +199,16 @@ const Fretboard = ({
   };
 
   /**
-   * 渲染弦
+   * Render Strings
    */
   const renderStrings = () => {
     return STANDARD_TUNING.map((note, index) => {
       const y = stringSpacing * (index + 1);
-      const stringWidth = 1.5 + index * 0.4; // 弦的粗细,低音弦更粗
+      const stringWidth = 1.5 + index * 0.4; // String thickness, thicker for low strings
 
       return (
         <g key={`string-${index}`}>
-          {/* 弦线阴影 */}
+          {/* String Shadow */}
           <line
             x1={nutWidth}
             y1={y + 1}
@@ -218,7 +218,7 @@ const Fretboard = ({
             strokeWidth={stringWidth}
             opacity={0.08}
           />
-          {/* 弦线 */}
+          {/* String Line */}
           <line
             x1={nutWidth}
             y1={y}
@@ -228,7 +228,7 @@ const Fretboard = ({
             strokeWidth={stringWidth}
             opacity={0.8}
           />
-          {/* 弦名标签 (左侧) */}
+          {/* String Name Label (Left) */}
           <text
             x={15}
             y={y + 5}
@@ -245,7 +245,7 @@ const Fretboard = ({
   };
 
   /**
-   * 渲染品丝
+   * Render Frets
    */
   const renderFrets = () => {
     const frets = [];
@@ -253,12 +253,12 @@ const Fretboard = ({
     for (let fret = 0; fret <= FRET_COUNT; fret++) {
       const x = nutWidth + fretSpacing * fret;
 
-      // 第0品(琴枕)用更粗的线
+      // Fret 0 (Nut) uses thicker line
       const strokeWidth = fret === 0 ? 8 : 3;
 
       frets.push(
         <g key={`fret-${fret}`}>
-          {/* 品丝阴影 */}
+          {/* Fret Shadow */}
           <line
             x1={x + 1}
             y1={stringSpacing}
@@ -268,7 +268,7 @@ const Fretboard = ({
             strokeWidth={strokeWidth}
             opacity={0.3}
           />
-          {/* 品丝 */}
+          {/* Fret Wire */}
           <line
             x1={x}
             y1={stringSpacing}
@@ -281,7 +281,7 @@ const Fretboard = ({
         </g>
       );
 
-      // 品号标签 (下方)
+      // Fret Number Label (Bottom)
       if (fret > 0) {
         frets.push(
           <text
@@ -304,27 +304,27 @@ const Fretboard = ({
   };
 
   /**
-   * 渲染品记 (圆点标记)
+   * Render Fret Markers
    */
   const renderFretMarkers = () => {
     const markers = [];
 
-    // 单圆点品记
+    // Single Dot Markers
     FRET_MARKERS.single.forEach(fret => {
       const x = nutWidth + fretSpacing * fret - fretSpacing / 2;
       const y = height / 2;
 
       markers.push(
         <g key={`marker-single-${fret}`}>
-          {/* 品记阴影 */}
+          {/* Marker Shadow */}
           <circle cx={x + 1} cy={y + 1} r={8} fill="#000" opacity={0.2} />
-          {/* 品记 */}
+          {/* Marker Dot */}
           <circle cx={x} cy={y} r={8} fill={colors.markerColor} opacity={0.8} />
         </g>
       );
     });
 
-    // 双圆点品记 (12品)
+    // Double Dot Markers (12th Fret)
     FRET_MARKERS.double.forEach(fret => {
       const x = nutWidth + fretSpacing * fret - fretSpacing / 2;
       const y1 = height / 3;
@@ -332,10 +332,10 @@ const Fretboard = ({
 
       markers.push(
         <g key={`marker-double-${fret}`}>
-          {/* 上圆点 */}
+          {/* Top Dot */}
           <circle cx={x + 1} cy={y1 + 1} r={8} fill="#000" opacity={0.2} />
           <circle cx={x} cy={y1} r={8} fill={colors.markerColor} opacity={0.8} />
-          {/* 下圆点 */}
+          {/* Bottom Dot */}
           <circle cx={x + 1} cy={y2 + 1} r={8} fill="#000" opacity={0.2} />
           <circle cx={x} cy={y2} r={8} fill={colors.markerColor} opacity={0.8} />
         </g>
@@ -346,7 +346,7 @@ const Fretboard = ({
   };
 
   /**
-   * 渲染高亮的音符
+   * Render Highlighted Notes
    */
   const renderHighlightedNotes = () => {
     return noteLayouts.map((noteLayout) => {
@@ -373,7 +373,7 @@ const Fretboard = ({
             onToggleNote(noteLayout);
           }}
         >
-          {/* 定义渐变 */}
+          {/* Define Gradients */}
           <defs>
             <radialGradient id={gradientId}>
               <stop offset="0%" stopColor={startColor} />
@@ -381,7 +381,7 @@ const Fretboard = ({
             </radialGradient>
           </defs>
 
-          {/* 音符外发光 */}
+          {/* Note Outer Glow */}
           <circle
             cx={x}
             cy={y}
@@ -390,7 +390,7 @@ const Fretboard = ({
             opacity={isSelected ? 0.4 : 0.3}
           />
 
-          {/* 选中描边 */}
+          {/* Selection Stroke */}
           {isSelected && (
             <circle
               cx={x}
@@ -403,7 +403,7 @@ const Fretboard = ({
             />
           )}
 
-          {/* 音符阴影 */}
+          {/* Note Shadow */}
           <circle
             cx={x + 2}
             cy={y + 2}
@@ -412,7 +412,7 @@ const Fretboard = ({
             opacity={0.3}
           />
 
-          {/* 音符圆圈 */}
+          {/* Note Circle */}
           <circle
             cx={x}
             cy={y}
@@ -423,7 +423,7 @@ const Fretboard = ({
             opacity={0.95}
           />
 
-          {/* 音符文本 */}
+          {/* Note Text */}
           <text
             x={x}
             y={y + 6}
@@ -465,7 +465,7 @@ const Fretboard = ({
           </pattern>
         </defs>
 
-        {/* 背景 - 亮色木纹 */}
+        {/* Background - Light Wood Grain */}
         <rect
           x={0}
           y={0}
@@ -484,16 +484,16 @@ const Fretboard = ({
           rx={12}
         />
 
-        {/* 品记 */}
+        {/* Fret Markers */}
         {renderFretMarkers()}
 
-        {/* 弦 */}
+        {/* Strings */}
         {renderStrings()}
 
-        {/* 品丝 */}
+        {/* Frets */}
         {renderFrets()}
 
-        {/* 选区 */}
+        {/* Selection Area */}
         {selectionRectNormalized && (
           <rect
             x={selectionRectNormalized.x}
@@ -509,7 +509,7 @@ const Fretboard = ({
           />
         )}
 
-        {/* 高亮音符 */}
+        {/* Highlighted Notes */}
         {renderHighlightedNotes()}
       </svg>
     </div>

@@ -1,38 +1,38 @@
 /**
- * 音乐理论核心算法
+ * Music Theory Core Algorithms
  */
 
 import { NOTES, STANDARD_TUNING, FRET_COUNT } from './constants.js';
 import { getScaleIntervals, getScaleDegrees } from './scaleDefinitions.js';
 
-// 用于智能拼写的音名列表 (包含同音异名)
+// List of note names for smart spelling (including enharmonic equivalents)
 const NOTE_NAMES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 const NOTE_NAMES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-// 字母序列，用于确定音级字母 (C -> D -> E ...)
+// Letter sequence for determining note letters (C -> D -> E ...)
 const NOTE_LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
 /**
- * 获取音符在12音列表中的索引
- * @param {string} noteName - 音符名称 (如 'C', 'D#')
- * @returns {number} 索引 (0-11)
+ * Get the index of a note in the 12-note list
+ * @param {string} noteName - Note name (e.g., 'C', 'D#')
+ * @returns {number} Index (0-11)
  */
 export const getNoteIndex = (noteName) => {
-  // 统一转为标准 Sharp 格式来查找索引
+  // Unify to standard Sharp format for index lookup
   const sharpIndex = NOTE_NAMES_SHARP.indexOf(noteName);
   if (sharpIndex !== -1) return sharpIndex;
 
   const flatIndex = NOTE_NAMES_FLAT.indexOf(noteName);
   if (flatIndex !== -1) return flatIndex;
 
-  // 处理特殊情况 (如 E#, Fb 等，虽然目前常量中没有用)
+  // Handle special cases (e.g., E#, Fb, though currently unused in constants)
   return 0;
 };
 
 /**
- * 根据索引获取音符名称 (默认返回Sharp格式，仅用于内部计算)
- * @param {number} index - 音符索引
- * @returns {string} 音符名称
+ * Get note name by index (Default returns Sharp format, used for internal calculation only)
+ * @param {number} index - Note index
+ * @returns {string} Note name
  */
 export const getNoteName = (index) => {
   const normalizedIndex = ((index % 12) + 12) % 12;
@@ -40,32 +40,32 @@ export const getNoteName = (index) => {
 };
 
 /**
- * 智能获取音符名称，基于音级和上下文
- * @param {string} rootNote - 根音
- * @param {number} intervalSum - 距离根音的半音数
- * @param {number} stepIndex - 在音阶中的第几步 (0-based)
- * @returns {string} 正确拼写的音符名称
+ * Smartly get note name based on degree and context
+ * @param {string} rootNote - Root note
+ * @param {number} intervalSum - Semitones from root
+ * @param {number} stepIndex - Steps in the scale (0-based)
+ * @returns {string} Correctly spelled note name
  */
 const getSmartNoteName = (rootNote, intervalSum, stepIndex, scaleDegree) => {
   const rootIndex = getNoteIndex(rootNote);
   const targetIndex = (rootIndex + intervalSum) % 12;
 
-  // 1. 确定目标字母
-  // 根音字母在字母表中的位置
+  // 1. Determine target letter
+  // Root letter position in alphabet
   const rootLetter = rootNote.charAt(0);
   const rootLetterIndex = NOTE_LETTERS.indexOf(rootLetter);
 
-  // 优先使用真实的级数来确定字母(如五声音阶跳过2级)
+  // Prefer actual degrees for letter determination (e.g. pentatonic skips 2nd)
   let letterShift = stepIndex;
   if (typeof scaleDegree === 'number' && Number.isFinite(scaleDegree)) {
     letterShift = (scaleDegree - 1) % 7;
   }
 
-  // 目标字母应该是根音字母往后推 letterShift 个
+  // Target letter should be letterShift positions after root letter
   const targetLetterIndex = (rootLetterIndex + letterShift + 7) % 7;
   const targetLetter = NOTE_LETTERS[targetLetterIndex];
 
-  // 根据与自然大调的偏移猜测使用降号还是升号
+  // Guess accidental based on offset from natural major
   const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
   let preferredAccidental = null;
   if (typeof scaleDegree === 'number' && Number.isFinite(scaleDegree)) {
@@ -75,12 +75,12 @@ const getSmartNoteName = (rootNote, intervalSum, stepIndex, scaleDegree) => {
     if (diff > 0) preferredAccidental = 'sharp';
   }
 
-  // 2. 尝试匹配 Sharp 或 Flat 或 Natural
-  // 比如目标是 F，但实际音高对应 'E' (4半音)，那就是 Fb (不常用) 或者是 E
-  // 我们的策略：优先匹配包含目标字母的变体
+  // 2. Try to match Sharp or Flat or Natural
+  // e.g. Target F, but pitch is 'E' (4 semitones), so it's Fb (uncommon) or E
+  // Strategy: Prioritize variant containing target letter
 
-  // 生成所有可能的变体 (Standard only for now: Natural, Sharp, Flat)
-  // 更复杂的比如 Double Sharp/Flat 暂时不处理，除非必要
+  // Generate all possible variants (Standard only for now: Natural, Sharp, Flat)
+  // Complex ones like Double Sharp/Flat ignored unless necessary
   const possibleNotes = [targetLetter];
   const sharpVariant = `${targetLetter}#`;
   const flatVariant = `${targetLetter}b`;
@@ -99,10 +99,10 @@ const getSmartNoteName = (rootNote, intervalSum, stepIndex, scaleDegree) => {
     }
   }
 
-  // 如果没有匹配到标准变体 (比如需要重升/重降，或者 E#=F 这种情况)
-  // 简单的回退策略：如果是自然大调或常见调式，尽量减少变音记号
-  // 这里简化处理：直接返回 Sharp 或 Flat 列表中最"干净"的一个
-  // 依据：根音如果是 Flat 系列，倾向于用 Flat
+  // If no standard variant matched (e.g. need Double Sharp/Flat, or E#=F)
+  // Simple fallback: If natural major or common mode, minimize accidentals
+  // Simplified: Return cleanest one from Sharp or Flat lists
+  // Basis: If root is Flat, prefer Flat
   if (rootNote.includes('b') || rootNote === 'F') {
     return NOTE_NAMES_FLAT[targetIndex];
   }
@@ -110,17 +110,17 @@ const getSmartNoteName = (rootNote, intervalSum, stepIndex, scaleDegree) => {
 };
 
 /**
- * 获取级数显示标签
- * @param {number} interval - 距离根音的半音数
- * @param {number} scaleDegree - 音阶中的第几个音 (1-based)
- * @returns {string} 级数标签 (如 'b3', '#4')
+ * Get degree display label
+ * @param {number} interval - Semitones from root
+ * @param {number} scaleDegree - Degree in scale (1-based)
+ * @returns {string} Degree label (e.g., 'b3', '#4')
  */
 const getDegreeLabel = (interval, scaleDegree) => {
-  // 标准大调音程对应表
+  // Standard Major Intervals
   // 1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11
   const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
 
-  // 计算预期的大调音程
+  // Calculate expected major interval
   // scaleDegree 1 -> index 0 (0 semitones)
   // scaleDegree 2 -> index 1 (2 semitones)
   // Wrap around for octaves not strictly needed here as we deal with simple modes < 12 notes usually
@@ -147,11 +147,11 @@ const getDegreeLabel = (interval, scaleDegree) => {
 };
 
 /**
- * 计算音阶
- * @param {string} rootNote - 根音 (如 'C')
- * @param {string} system - 音阶系统
- * @param {string} mode - 调式
- * @returns {Array<{note: string, degree: string, isRoot: boolean}>} 音阶音符数组
+ * Calculate Scale
+ * @param {string} rootNote - Root note (e.g., 'C')
+ * @param {string} system - Scale system
+ * @param {string} mode - Scale mode
+ * @returns {Array<{note: string, degree: string, isRoot: boolean}>} Scale notes array
  */
 export const calculateScale = (rootNote, system, mode) => {
   const intervals = getScaleIntervals(system, mode);
@@ -164,20 +164,20 @@ export const calculateScale = (rootNote, system, mode) => {
   const scale = [];
   let currentIntervalSum = 0;
 
-  // 根音
+  // Root
   scale.push({
     note: rootNote,
     degree: '1',
     isRoot: true,
-    interval: 0 // 内部使用
+    interval: 0 // Internal use
   });
 
-  // 计算其他音
+  // Calculate other notes
   for (let i = 0; i < intervals.length - 1; i++) {
     currentIntervalSum += intervals[i];
 
-    // 智能计算音名
-    // i=0 是第2个音 (degree 2), stepIndex = 1
+    // Smart note naming
+    // i=0 is 2nd note (degree 2), stepIndex = 1
     const stepIndex = i + 1;
     let scaleDegree = i + 2; // Default 1-based degree
 
@@ -202,7 +202,7 @@ export const calculateScale = (rootNote, system, mode) => {
 };
 
 /**
- * 计算指板上每个位置的音符 (保留 Sharp 格式用于匹配，或者我们可以优化显示)
+ * Calculate notes on fretboard (Keeps Sharp format for matching)
  * @returns {Array<Array<{note: string, fret: number}>>}
  */
 export const calculateFretboardNotes = (tuning = STANDARD_TUNING, frets = FRET_COUNT) => {
@@ -222,7 +222,7 @@ export const calculateFretboardNotes = (tuning = STANDARD_TUNING, frets = FRET_C
 };
 
 /**
- * 匹配音阶到指板
+ * Match scale to fretboard
  */
 export const matchScaleToFretboard = (scale, fretboardNotes) => {
   const highlightedPositions = [];
@@ -263,7 +263,7 @@ export const matchScaleToFretboard = (scale, fretboardNotes) => {
 };
 
 /**
- * 获取音符的显示文本
+ * Get display text for note
  */
 export const getNoteDisplayText = (position, showDegree) => {
   if (showDegree) {
@@ -274,57 +274,57 @@ export const getNoteDisplayText = (position, showDegree) => {
 };
 
 /**
- * 计算和弦转位
- * @param {Array<{string: number, fret: number, note: string}>} selectedNotes - 用户选中的音符
- * @param {number} totalFrets - 指板总品数
- * @returns {Array<{name: string, color: string, notes: Array<Object>}>} 转位组
+ * Calculate Chord Inversions
+ * @param {Array<{string: number, fret: number, note: string}>} selectedNotes - User selected notes
+ * @param {number} totalFrets - Total frets
+ * @returns {Array<{name: string, color: string, notes: Array<Object>}>} Inversions group
  */
 export const calculateInversions = (selectedNotes, totalFrets = FRET_COUNT) => {
   if (!selectedNotes || selectedNotes.length < 2) return [];
 
-  // 1. 提取去重后的音级序列 (0-11)
+  // 1. Extract distinct pitch classes (0-11)
   const chordTones = [...new Set(selectedNotes.map(p => getNoteIndex(p.note)))].sort((a, b) => a - b);
   const toneCount = chordTones.length;
 
   const inversions = [];
-  const colors = ['blue', 'green', 'orange', 'purple', 'red', 'yellow']; // 颜色代号，将在组件中映射
+  const colors = ['blue', 'green', 'orange', 'purple', 'red', 'yellow']; // Color codes mapped in component
 
-  // 初始形状 (按弦排序)
+  // Initial shape (sorted by string)
   let currentShape = [...selectedNotes].sort((a, b) => a.string - b.string);
 
-  // 生成 N 个转位 (包括原位)
+  // Generate N inversions (including root position)
   for (let i = 0; i < toneCount; i++) {
     const inversionName = i === 0 ? 'Root Position' : `${i}${getOrdinalSuffix(i)} Inversion`;
 
-    // 如果是第一次迭代(i=0), 直接使用用户的选择(经过排序)作为原位
-    // 注意: 用户选择的可能已经是某种转位, 但我们在上下文中将其视为"起始"
-    // 或者, 我们可以重新标准化位置, 但为了尊重用户输入, 我们保留 i=0 为 original selection
+    // If first iteration (i=0), use user selection (sorted) as root position
+    // Note: User selection might already be an inversion, but we treat it as "start"
+    // Or we could normalize, but to respect user input, we keep i=0 as original selection
 
     let shape;
     if (i === 0) {
       shape = currentShape.map(n => ({
         ...n,
-        // 重新计算 degree 可能是必要的，如果我们需要准确的 degree 显示
-        // 这里暂时保留原始 note info
+        // Recalculating degree might be necessary if we need accurate degree display
+        // Keeping original note info for now
       }));
     } else {
-      // 基于上一个形状计算下一个
+      // Calculate next shape based on previous
       const prevShape = inversions[i - 1].notes;
       shape = prevShape.map(prevNote => {
-        // 找到当前音在 chordTones 中的位置
+        // Find current note in chordTones
         const currentToneIndex = chordTones.indexOf(getNoteIndex(prevNote.note));
 
-        // 下一个目标音 (循环)
+        // Next target note (cyclic)
         const nextToneIndex = (currentToneIndex + 1) % toneCount;
         const targetPitchClass = chordTones[nextToneIndex];
 
-        // 在同弦上寻找位置
-        // 策略: 寻找 > prevFret 的最近位置. 如果超出指板, 则回绕到低要把位
-        // 这样可以模拟在指板上不断上行的效果, 直到尽头
+        // Find position on same string
+        // Strategy: Find nearest position > prevFret. If exceeds fretboard, wrap to low frets
+        // Simulates ascending on the string until end
 
-        const nextNoteName = getNoteName(targetPitchClass); // 获取标准Sharp名
+        const nextNoteName = getNoteName(targetPitchClass); // Get standard Sharp name
 
-        // 计算目标 fret
+        // Calculate target fret
         // basic calculation: find smallest k >= 0 such that (stringOpen + k) % 12 == targetPitchClass
         // constraint: k > prevFret (ascend)
         // logic: k = prevFret + distance
@@ -335,7 +335,7 @@ export const calculateInversions = (selectedNotes, totalFrets = FRET_COUNT) => {
         // minimal move up is dist, or dist + 12, etc.
         let nextFret = prevNote.fret + (dist === 0 ? 12 : dist); // If same note, must move octave up
 
-        // 如果超出了指板范围, 尝试寻找该弦上最低的可用位置
+        // If exceeds fretboard range, try to find lowest available position on string
         if (nextFret > totalFrets) {
           // Find lowest instance on string
           // openString note index
@@ -350,8 +350,8 @@ export const calculateInversions = (selectedNotes, totalFrets = FRET_COUNT) => {
           string: prevNote.string,
           fret: nextFret,
           note: nextNoteName,
-          degree: '?', // 可以重新计算如果需要
-          isRoot: false // 只是个标记
+          degree: '?', // Recalculate if needed
+          isRoot: false // Just a flag
         };
       });
     }
@@ -379,4 +379,170 @@ const getOrdinalSuffix = (i) => {
     return "rd";
   }
   return "th";
+};
+
+/**
+ * Calculate Diatonic Series
+ * @param {Array<{string: number, fret: number, note: string}>} selectedNotes - User selected notes
+ * @param {string} rootNote - Key Root Note
+ * @param {string} system - Scale System
+ * @param {string} mode - Scale Mode
+ * @param {number} totalFrets - Fret count
+ * @returns {Array<{name: string, color: string, notes: Array<Object>}>} Diatonic series
+ */
+export const calculateDiatonic = (selectedNotes, rootNote, scaleSystem, mode, totalFrets = FRET_COUNT) => {
+  if (!selectedNotes || selectedNotes.length === 0) return [];
+
+  // 1. Get full scale
+  const scale = calculateScale(rootNote, scaleSystem, mode);
+  if (!scale || scale.length === 0) return [];
+
+  // Get degrees definition if available
+  const explicitDegrees = getScaleDegrees(scaleSystem, mode);
+
+  // 2. Map selected notes to scale indices
+  // We need to know which index in the scale (0, 1, 2...) each selected note corresponds to.
+  // We use note name to match.
+  const scaleNoteNames = scale.map(s => s.note);
+
+  // Helper to find index in scale (handling enharmonics loosely by index checking if name fails?)
+  // For now, assume 'calculateScale' smart spelling matches fretboard spelling or we check indexes.
+  const scaleNoteIndices = scaleNoteNames.map(n => getNoteIndex(n));
+
+  const selectionIndices = selectedNotes.map(pos => {
+    const noteIndex = getNoteIndex(pos.note);
+    const idx = scaleNoteIndices.indexOf(noteIndex);
+    return {
+      ...pos,
+      scaleIndex: idx, // -1 if not in scale
+      originalNoteIndex: noteIndex
+    };
+  });
+
+  // Filter out notes not in scale? Or keep them static?
+  // Request implies we are moving scale degrees. If note is chromatic, undefined behavior.
+  // We will filter only in-scale notes for generating the sequence.
+  const validSelection = selectionIndices.filter(s => s.scaleIndex !== -1);
+
+  if (validSelection.length === 0) return [];
+
+  const diatonicSeries = [];
+  const colors = ['blue', 'green', 'orange', 'purple', 'red', 'yellow', 'blue']; // 7 steps
+  const scaleLength = scale.length;
+
+  // We sort validSelection by string/fret to maintain "shape" logic
+  // But wait, user order preference? User said "1735 -> 2146". 
+  // If user selected randomly, we might want to respect that structure or just spatial.
+  // Spatial (String/Fret) is safer for visual rendering.
+  const sortedSelection = [...validSelection].sort((a, b) => a.string - b.string || a.fret - b.fret);
+
+  // Generate scaleLength steps (usually 7)
+  for (let step = 0; step < scaleLength; step++) {
+    // Current Scale Root for this Step
+    // Step 0: Root is scale[0] (C)
+    // Step 1: Root is scale[1] (D)
+    // ...
+    const stepRootObj = scale[step];
+    const stepRootIndex = getNoteIndex(stepRootObj.note);
+
+    const stepNotes = sortedSelection.map(item => {
+      // Calculate new scale index
+      const nextScaleIndex = (item.scaleIndex + step) % scaleLength;
+      const targetScaleNoteObj = scale[nextScaleIndex];
+      const targetNoteIndex = getNoteIndex(targetScaleNoteObj.note);
+
+      // Calculate visual properties
+      // 1. Note Name
+      const noteName = targetScaleNoteObj.note;
+
+      // 2. Degree relative to Step Root
+      // We calculate interval from stepRoot to targetNote
+      const interval = (targetNoteIndex - stepRootIndex + 12) % 12;
+
+      // Calculate estimated degree for getDegreeLabel
+      let scaleDegree = -1;
+
+      // If we have explicit degrees (e.g. 1, 2, 3, 4...)
+      // We want the degree of 'target' RELATIVE to 'stepRoot'.
+      // Assuming heptatonic-like degrees (modulo 7 behavior)
+      if (explicitDegrees && explicitDegrees.length > step && explicitDegrees.length > nextScaleIndex) {
+        const rootDeg = explicitDegrees[step];
+        const targetDeg = explicitDegrees[nextScaleIndex];
+        // Calculate relative degree 1-7
+        // (Target - Root)
+        let diff = targetDeg - rootDeg;
+        // Normalize diff to 0-6 range (wrapper 7)
+        while (diff < 0) diff += 7;
+        diff = diff % 7;
+        scaleDegree = diff + 1;
+      } else {
+        // Fallback based on indices (assuming 1-step = 1-degree)
+        let diff = nextScaleIndex - step;
+        while (diff < 0) diff += scaleLength;
+        scaleDegree = (diff % 7) + 1;
+      }
+
+      const degree = getDegreeLabel(interval, scaleDegree);
+
+      // 3. Fret Position
+      // Find position on the same string
+      // Logic: Find smallest fret >= prevFret (of previous step)
+      // If step == 0, use original fret.
+
+      let targetFret = item.fret;
+
+      if (step > 0) {
+        // Check previous step's fret for this string/item
+        // validSelection is parallel to diatonicSeries[step-1].notes?
+        // sort order is preserved.
+        const prevNote = diatonicSeries[step - 1].notes.find(n => n.initialKey === `${item.string}-${item.fret}`);
+        if (prevNote) {
+          const prevFret = prevNote.fret;
+          const openStringIndex = getNoteIndex(STANDARD_TUNING[item.string]);
+          // We want fret such that (open + fret) % 12 == targetNoteIndex
+          // AND fret >= prevFret (usually asc, unless wrapping)
+
+          // dist from prevNote to targetNote
+          // But wait, we just need targetNote on this string.
+
+          // Calc 'min' fret for this note on string
+          const baseFret = (targetNoteIndex - openStringIndex + 12) % 12;
+
+          // We want nearest fret >= prevFret
+          // k * 12 + baseFret >= prevFret
+          let k = 0;
+          while ((k * 12 + baseFret) < prevFret) {
+            k++;
+          }
+          // If spacing is too big (e.g. > 4 frets jump), maybe we should have stayed lower?
+          // But diatonic steps are usually close (1 or 2 frets).
+          // Exception: crossing 12th fret.
+
+          targetFret = k * 12 + baseFret;
+
+          // Wrap if out of bounds
+          if (targetFret > totalFrets) {
+            targetFret = baseFret; // Wrap to bottom
+          }
+        }
+      }
+
+      return {
+        string: item.string,
+        fret: targetFret,
+        note: noteName,
+        degree: degree, // Relative degree
+        isRoot: interval === 0,
+        initialKey: `${item.string}-${item.fret}` // ID to track continuity
+      };
+    });
+
+    diatonicSeries.push({
+      name: `Step ${step + 1}`,
+      color: colors[step % colors.length],
+      notes: stepNotes
+    });
+  }
+
+  return diatonicSeries;
 };

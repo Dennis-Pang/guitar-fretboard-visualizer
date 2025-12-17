@@ -1,6 +1,6 @@
 /**
- * ControlPanel 组件 - 控制面板
- * 包含根音选择器、音阶系统选择器、调式选择器、级数开关
+ * ControlPanel Component
+ * Includes Root Note Selector, Scale System Selector, Mode Selector, Degree Toggle
  */
 
 import React, { useMemo } from 'react';
@@ -43,9 +43,10 @@ const ControlPanel = ({
   onModeChange,
   onShowDegreeChange,
   onGenerateInversions,
+  onGenerateDiatonic,
   onClearHighlights
 }) => {
-  // 获取当前音阶系统的所有调式
+  // Get all modes for current scale system
   const availableModes = getAllModes(scaleSystem);
   const currentMode = availableModes.find(m => m.id === mode);
 
@@ -69,7 +70,7 @@ const ControlPanel = ({
 
   return (
     <div className="control-panel w-full max-w-[1200px] mx-auto mb-8 animate-fade-in-up px-4 md:px-0">
-      {/* 顶部标题栏 + 当前音阶展示 */}
+      {/* Header + Current Scale Display */}
       <div className="flex flex-col items-center justify-center mb-8">
         <h1 className="text-3xl md:text-5xl font-black text-text-main mb-3 tracking-tight text-center uppercase font-heading transition-colors">
           Guitar Scale Visualizer
@@ -80,11 +81,11 @@ const ControlPanel = ({
         </p>
       </div>
 
-      {/* 主控制栏 */}
+      {/* Main Control Bar */}
       <div className="bg-secondary-bg/95 border border-tertiary-bg rounded-3xl p-6 md:p-8 shadow-xl shadow-indigo-100 transition-colors duration-300">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 lg:gap-6">
 
-          {/* 1. 根音 */}
+          {/* 1. Root Note */}
           <div className="flex flex-col gap-2 lg:min-w-[80px]">
             <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Root</label>
             <div className="relative group">
@@ -105,7 +106,7 @@ const ControlPanel = ({
 
           <div className="hidden lg:block w-px h-12 bg-slate-200 mx-2 transition-colors"></div>
 
-          {/* 2. 音阶系统 */}
+          {/* 2. Scale System */}
           <div className="flex flex-col gap-2 flex-1 lg:min-w-[180px]">
             <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">System</label>
             <div className="relative">
@@ -124,7 +125,7 @@ const ControlPanel = ({
             </div>
           </div>
 
-          {/* 3. 调式 */}
+          {/* 3. Mode */}
           <div className="flex flex-col gap-2 flex-[1.5] lg:min-w-[200px]">
             <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Mode</label>
             <div className="relative">
@@ -145,7 +146,7 @@ const ControlPanel = ({
 
           <div className="hidden lg:block w-px h-12 bg-tertiary-bg mx-2 transition-colors"></div>
 
-          {/* 4. 显示切换 */}
+          {/* 4. Display Toggle */}
           <div className="flex flex-col gap-2 lg:min-w-[140px]">
             <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Display</label>
             <div className="flex bg-toggle-track rounded-2xl p-1 border border-tertiary-bg h-[46px] transition-colors shadow-sm">
@@ -172,19 +173,27 @@ const ControlPanel = ({
 
           <div className="hidden lg:block w-px h-12 bg-tertiary-bg mx-2 transition-colors"></div>
 
-          {/* 5. Inversion Controls */}
-          <div className="flex flex-col gap-2 lg:min-w-[140px]">
-            <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Inversion</label>
-            <div className="flex gap-2 h-[46px]">
+          {/* 5. Inversion & Diatonic Controls */}
+          <div className="flex flex-col gap-2 lg:min-w-[200px]">
+            <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Tools</label>
+            <div className="flex bg-toggle-track rounded-2xl p-1 border border-tertiary-bg h-[46px] transition-colors shadow-sm gap-1">
               <button
                 onClick={onGenerateInversions}
-                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-3 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap"
+                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap"
+                title="Generate Inversions"
               >
                 Invert
               </button>
               <button
+                onClick={onGenerateDiatonic}
+                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap"
+                title="Generate Diatonic Series"
+              >
+                Diatonic
+              </button>
+              <button
                 onClick={onClearHighlights}
-                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-muted hover:text-red-500 text-xs font-bold rounded-xl px-3 transition-colors active:scale-95 whitespace-nowrap"
+                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-muted hover:text-red-500 text-xs font-bold rounded-xl px-2 transition-colors active:scale-95 whitespace-nowrap"
                 title="Clear All"
               >
                 Clear
@@ -193,7 +202,7 @@ const ControlPanel = ({
           </div>
         </div>
 
-        {/* 5. 推荐和弦显示区域 */}
+        {/* 6. Chord Suggestions */}
         {chordSuggestions.length > 0 && (
           <div className="mt-6 pt-4 border-t border-tertiary-bg transition-colors">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
