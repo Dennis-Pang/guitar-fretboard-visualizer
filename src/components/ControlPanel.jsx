@@ -189,14 +189,14 @@ const ControlPanel = ({
             <div className="flex bg-toggle-track rounded-2xl p-1 border border-tertiary-bg h-[46px] transition-colors shadow-sm gap-1">
               <button
                 onClick={onGenerateInversions}
-                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap border border-transparent"
+                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-main hover:text-accent text-xs font-bold rounded-xl px-2 transition-colors active:scale-95 whitespace-nowrap border border-tertiary-bg/50"
                 title="Generate Inversions"
               >
                 Invert
               </button>
               <button
                 onClick={onGenerateDiatonic}
-                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap border border-transparent"
+                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-main hover:text-accent text-xs font-bold rounded-xl px-2 transition-colors active:scale-95 whitespace-nowrap border border-tertiary-bg/50"
                 title="Generate Diatonic Series"
               >
                 Diatonic
