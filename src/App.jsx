@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Fretboard from './components/Fretboard';
 import ControlPanel from './components/ControlPanel';
 import ThemeToggle from './components/ThemeToggle';
+import Feedback from './components/Feedback';
 import { calculateScale, calculateFretboardNotes, matchScaleToFretboard, calculateInversions, calculateDiatonic } from './utils/musicTheory';
 
 function App() {
@@ -262,6 +263,9 @@ function App() {
             />
           </div>
         </div>
+
+        {/* Feedback Module */}
+        <Feedback />
       </div>
     </div>
   );

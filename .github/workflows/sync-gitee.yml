@@ -1,0 +1,28 @@
+name: Sync to Gitee
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Sync to Gitee
+      uses: wearerequired/git-mirror-action@master
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY }}
+      with:
+        source-repo: "git@github.com:${{ github.repository }}.git"
+        destination-repo: "git@gitee.com:${{ secrets.GITEE_USERNAME }}/${{ github.event.repository.name }}.git"
+
+    - name: Build and Deploy to Gitee Pages
+      uses: yanglbme/gitee-pages-action@main
+      with:
+        # Your Gitee username
+        gitee-username: ${{ secrets.GITEE_USERNAME }}
+        # Your Gitee password/token
+        gitee-password: ${{ secrets.GITEE_PASSWORD }}
+        # The branch to deploy
+        gitee-repo: ${{ github.event.repository.name }}
+        branch: main

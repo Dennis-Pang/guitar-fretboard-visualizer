@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
+import Tooltip from './Tooltip';
 import { ROOT_NOTES, SCALE_SYSTEMS } from '../utils/constants';
 import { getAllModes } from '../utils/scaleDefinitions';
 import { getNoteIndex } from '../utils/musicTheory';
@@ -175,25 +176,34 @@ const ControlPanel = ({
 
           {/* 5. Inversion & Diatonic Controls */}
           <div className="flex flex-col gap-2 lg:min-w-[200px]">
-            <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Tools</label>
+            <div className="flex items-center gap-1">
+              <label className="text-[10px] font-bold text-accent uppercase tracking-widest pl-1 transition-colors">Tools</label>
+              <Tooltip text="Invert: Generate chord inversions | Diatonic: Show diatonic series">
+                <div className="text-accent cursor-help opacity-70 hover:opacity-100 transition-opacity">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                    <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 01-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </Tooltip>
+            </div>
             <div className="flex bg-toggle-track rounded-2xl p-1 border border-tertiary-bg h-[46px] transition-colors shadow-sm gap-1">
               <button
                 onClick={onGenerateInversions}
-                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap"
+                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap border border-transparent"
                 title="Generate Inversions"
               >
                 Invert
               </button>
               <button
                 onClick={onGenerateDiatonic}
-                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap"
+                className="flex-1 bg-accent hover:bg-accent/90 text-white text-xs font-bold rounded-xl px-2 transition-colors shadow-sm shadow-accent/20 active:scale-95 whitespace-nowrap border border-transparent"
                 title="Generate Diatonic Series"
               >
                 Diatonic
               </button>
               <button
                 onClick={onClearHighlights}
-                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-muted hover:text-red-500 text-xs font-bold rounded-xl px-2 transition-colors active:scale-95 whitespace-nowrap"
+                className="flex-1 bg-tertiary-bg hover:bg-tertiary-bg/80 text-text-main hover:text-red-600 text-xs font-bold rounded-xl px-2 transition-colors active:scale-95 whitespace-nowrap border border-tertiary-bg/50"
                 title="Clear All"
               >
                 Clear
